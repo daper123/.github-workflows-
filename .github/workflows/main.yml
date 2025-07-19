@@ -2,7 +2,7 @@ name: Run Daily MLB Predictions
 
 on:
   schedule:
-    # This runs the script every day at 13:44 CDT (e.g., 9 AM CDT)
+    # This runs the script every day at 14:00 UTC (e.g., 9 AM CDT)
     - cron: '0 14 * * *'
   workflow_dispatch: # This adds a button to run it manually on GitHub
 
@@ -26,17 +26,19 @@ jobs:
       - name: Run the prediction script
         run: python mlb_model.py
 
-      # NEW STEP: Commit and push the results
+      # NEW: Updated step to safely commit files only if they exist
       - name: Commit prediction files
         run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git pull
-          git add report_*.txt predictions_*.csv
-          # Only commit if there are changes
-          if git diff --staged --quiet; then
-            echo "No changes to commit."
-          else
+          # This command checks if any report files exist.
+          # It will only proceed if files are found.
+          if ls report_*.txt 1> /dev/null 2>&1; then
+            echo "Prediction files found. Committing to repository."
+            git config --global user.name 'github-actions[bot]'
+            git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+            git pull
+            git add report_*.txt predictions_*.csv
             git commit -m "📊 Add daily predictions for $(date +'%Y-%m-%d')"
             git push
+          else
+            echo "No prediction files generated. Nothing to commit."
           fi
