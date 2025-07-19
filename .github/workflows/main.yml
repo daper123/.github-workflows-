@@ -2,7 +2,7 @@ name: Run Daily MLB Predictions
 
 on:
   schedule:
-    # This runs the script every day at 13:34 CDT (e.g., 9 AM CDT)
+    # This runs the script every day at 13:44 CDT (e.g., 9 AM CDT)
     - cron: '0 14 * * *'
   workflow_dispatch: # This adds a button to run it manually on GitHub
 
