@@ -493,21 +493,47 @@ class BettingAnalyzer:
 # Cell 8: Visualization & Reporting (No changes needed here)
 # ==============================================================================
 class DashboardGenerator:
-    @staticmethod
+      @staticmethod
     def create_summary_report(opportunities_df):
+        """
+        Creates a text-based summary, saves it to a .txt file,
+        and saves the raw data to a .csv file.
+        """
         if opportunities_df.empty:
             print("\nNo valuable betting opportunities found today.")
             return
-        print("\n" + "="*80)
-        print("🎯 Top F5 Betting Opportunities for Today")
-        print("="*80)
+
+        # --- Create the formatted report string ---
+        report_lines = []
+        report_lines.append("="*80)
+        report_lines.append("🎯 Top F5 Betting Opportunities for Today")
+        report_lines.append("="*80)
+        
         report_df = opportunities_df.sort_values('edge', ascending=False).head(config.MAX_BETS_PER_DAY)
+        
         for _, opp in report_df.iterrows():
-            print(f"\nGame: {opp['game']}")
-            print(f"  Bet On: {opp['bet_on']} F5 ML ({opp['odds']:+d})")
-            print(f"  Model Edge: {opp['edge']:.2%}")
-            print(f"  Model Prob: {opp['model_prob']:.2%} vs. Implied Prob: {opp['implied_prob']:.2%}")
-            print(f"  Recommended Bet Size (Kelly): {opp['kelly_size']:.2%} of bankroll")
+            report_lines.append(f"\nGame: {opp['game']}")
+            report_lines.append(f"  Bet On: {opp['bet_on']} F5 ML ({opp['odds']:+d})")
+            report_lines.append(f"  Model Edge: {opp['edge']:.2%}")
+            report_lines.append(f"  Model Prob: {opp['model_prob']:.2%} vs. Implied Prob: {opp['implied_prob']:.2%}")
+            report_lines.append(f"  Recommended Bet Size (Kelly): {opp['kelly_size']:.2%} of bankroll")
+        
+        final_report = "\n".join(report_lines)
+        print(final_report) # Keep printing to the console for logs
+
+        # --- Save the output files ---
+        today_str = datetime.now().strftime('%Y-%m-%d')
+        report_filename_txt = f'report_{today_str}.txt'
+        report_filename_csv = f'predictions_{today_str}.csv'
+
+        # Save the formatted text report
+        with open(report_filename_txt, 'w') as f:
+            f.write(final_report)
+        print(f"\n✅ Formatted report saved to {report_filename_txt}")
+
+        # Save the raw data DataFrame to CSV
+        report_df.to_csv(report_filename_csv, index=False)
+        print(f"✅ Raw data saved to {report_filename_csv}")
 
     @staticmethod
     def create_feature_importance_plot(model):
